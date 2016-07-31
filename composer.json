@@ -1,0 +1,16 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Tlab\\": "app/Tlab"
+        }
+    },
+	"require-dev": {
+        "sunra/dbug": "0.2.1"
+    },
+    "require": {
+        "php": ">=5.5.0",
+        "monolog/monolog": "^1.17",
+		"phpmailer/phpmailer": "v5.2.16",
+        "symfony/http-foundation": "v3.1.2"
+    }
+}
