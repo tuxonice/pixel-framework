@@ -9,13 +9,17 @@ class indexController extends Controller
 {
 
 
-public function indexAction(){
+public function indexAction(AppBoot $app, $request, $response){
 
 	 /** @var AppBoot $app */
-     $app = AppBoot::getInstance();
+     //$app = AppBoot::getInstance();
      $database = $app->getDatabaseInstace();
      $langISO = $app->getLangISO();
 
+     
+     var_dump($request);
+     echo('-----------------');
+     var_dump($response);
           
      $view = new View();
      $view->langISO = $langISO;
