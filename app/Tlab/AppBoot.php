@@ -295,7 +295,6 @@ public function setStatusMessageBlock(){
 
 public function route(){
 	
-	
 	if(class_exists('Tlab\\Controllers\\'.$this->getController())) {
        $rc = new \ReflectionClass('Tlab\\Controllers\\'.$this->getController());
        if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($this->getAction())) {
@@ -306,29 +305,28 @@ public function route(){
 	}else{
 		$this->invokeNotFoundAction();
 	}
-
-}
-
-
-private function invokeAction($rc)
-{
-	$controller = $rc->newInstance();
-	$method = $rc->getMethod($this->getAction());
-	$method->invoke($controller,$this, $this->_httpRequest, $this->_httpResponse);
+	
 }
 
 
 private function invokeNotFoundAction()
 {
-	//NÃO EXISTE ACTION
 	$this->_controller = 'errorController';
 	$this->_action = 'indexAction';
 	$this->_httpCode = 'HTTP/1.0 404 Not found';
 	$rc = new \ReflectionClass('Tlab\\Controllers\\' . $this->getController());
-	$controller = $rc->newInstance();
-	$method = $rc->getMethod($this->getAction());
-	$method->invoke($controller);
+	$this->invokeAction($rc);
 }
+
+private function invokeAction($rc)
+{
+	$controller = $rc->newInstance($this);
+	$method = $rc->getMethod($this->getAction());
+	$method->invoke($controller, $this->_httpRequest, $this->_httpResponse);
+}
+
+
+
 
 public function getController() {
 	return $this->_controller;

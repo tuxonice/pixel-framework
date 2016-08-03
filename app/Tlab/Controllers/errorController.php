@@ -1,26 +1,25 @@
 <?php
 namespace Tlab\Controllers;
 
-use Tlab\AppBoot;
 use Tlab\Libraries\Controller;
 use Tlab\Libraries\View;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class errorController extends Controller{
 	
 	
-	public function indexAction(){
+	public function indexAction(Request $request, Response $response){
 
-		/** @var AppBoot $app */
-		$app = AppBoot::getInstance();
-		$app->getResponse()->setStatusCode(404, 'HTTP/1.0 404 Not found');
+		$response->setStatusCode(404, 'HTTP/1.0 404 Not found');
 		
-		$app->setBlock('footerBlock', array('langISO'=>$app->getLangISO(),'controller'=>$app->getController()));
+		$this->app->setBlock('footerBlock', array('langISO'=>$this->app->getLangISO(),'controller'=>$this->app->getController()));
 		
     	$view = new View();
-    	$view->langISO = $app->getLangISO();
-    	$result = $view->render($app->getTemplate(),'index','error');
-    	$app->setBody($result);
-    	$app->setHeadTags($view->getHead());
+    	$view->langISO = $this->app->getLangISO();
+    	$result = $view->render($this->app->getTemplate(),'index','error');
+    	$this->app->setBody($result);
+    	$this->app->setHeadTags($view->getHead());
 				
 }
 	

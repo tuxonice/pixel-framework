@@ -5,14 +5,14 @@ use Tlab\AppBoot;
 
 class Controller{
 	
-
+	protected $app = NULL;
 	
-public function	__construct(){
+public function	__construct(AppBoot $app){
 	
-	$app = AppBoot::getInstance();
+	$this->app = $app;
 	$langISO = $app->getLangISO();
-	$app->setBlock('footerBlock', array('langISO'=>$langISO,'controller'=>$app->getController()));
-    $app->setStatusMessageBlock();
+	$this->app->setBlock('footerBlock', array('langISO'=>$langISO,'controller'=>$app->getController()));
+    $this->app->setStatusMessageBlock();
     
                 
 }
