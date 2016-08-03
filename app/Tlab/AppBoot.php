@@ -295,29 +295,37 @@ public function setStatusMessageBlock(){
 
 public function route(){
 	
-	
 	if(class_exists('Tlab\\Controllers\\'.$this->getController())) {
        $rc = new \ReflectionClass('Tlab\\Controllers\\'.$this->getController());
-       if($rc->isSubclassOf('Tlab\\Libraries\\Controller')) {
-           if($rc->hasMethod($this->getAction())) {
-           	  $controller = $rc->newInstance();
-              $method = $rc->getMethod($this->getAction());
-              $method->invoke($controller);
-           }else{
-               $this->actionDoesNotExist();
-
-           }
-	   } else {
-	   		//NÃO É SUBCLASS DE CONTROLLER
-           $this->actionDoesNotExist();
-			}
-	} else {
-		//NÃO EXISTE CONTROLLER
-        $this->actionDoesNotExist();
+       if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($this->getAction())) {
+       		$this->invokeAction($rc);
+		}else{
+			$this->invokeNotFoundAction();
+		}
+	}else{
+		$this->invokeNotFoundAction();
 	}
-
-
+	
 }
+
+
+private function invokeNotFoundAction()
+{
+	$this->_controller = 'errorController';
+	$this->_action = 'indexAction';
+	$this->_httpCode = 'HTTP/1.0 404 Not found';
+	$rc = new \ReflectionClass('Tlab\\Controllers\\' . $this->getController());
+	$this->invokeAction($rc);
+}
+
+private function invokeAction($rc)
+{
+	$controller = $rc->newInstance($this);
+	$method = $rc->getMethod($this->getAction());
+	$method->invoke($controller, $this->_httpRequest, $this->_httpResponse);
+}
+
+
 
 
 public function getController() {
@@ -557,15 +565,5 @@ public function Output(){
 	
 }
 
-    public function actionDoesNotExist()
-    {
-        //NÃO EXISTE ACTION
-        $this->_controller = 'errorController';
-        $this->_action = 'indexAction';
-        $this->_httpCode = 'HTTP/1.0 404 Not found';
-        $rc = new \ReflectionClass('Tlab\\Controllers\\' . $this->getController());
-        $controller = $rc->newInstance();
-        $method = $rc->getMethod($this->getAction());
-        $method->invoke($controller);
-    }
+    
 }
