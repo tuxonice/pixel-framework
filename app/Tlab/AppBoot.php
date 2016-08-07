@@ -2,29 +2,24 @@
 namespace Tlab;
 
 use Tlab\Controllers;
-use Tlab\Libraries\View;
 use Tlab\Libraries\Session;
 use Tlab\Libraries\Database;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 
+
 class AppBoot {
 	
 
 protected $_controller, $_action, $_params, $_body;
-protected $_blockList = NULL;
 protected $_database = NULL;
-protected $_headTags = NULL;
-protected $_footerTags = NULL;
+protected $_twig = NULL;
 
 protected $_template = NULL;
 protected $_layout = NULL; //layout actual
 protected $_langISO = NULL; //ISO code da lingua actual
 protected $_settings = NULL;
-
-protected $_metaTags = NULL; //array
-protected $_pageTitle = NULL;
 
 protected $_httpRequest = NULL;
 protected $_httpResponse = NULL;	
@@ -83,7 +78,25 @@ private function __construct($settings) {
 	$this->_layout = $this->getConfig('settings.page_layout');
 	$this->_template = $this->getConfig('settings.page_template');
 	
+	$this->templateLoader();
 	
+}
+
+
+private function templateLoader(){
+	
+	
+	$loader = new \Twig_Loader_Filesystem(_CONFIG_TEMPLATE_PATH);
+	$this->_twig = new \Twig_Environment($loader, array(
+			'cache' => _CONFIG_TEMPLATE_PATH._DS.'_cache',
+	));
+	
+}
+
+
+public function render($file,$params){
+	
+	return $this->_twig->render($file,$params);
 }
 
     private function processLanguage($splits)
@@ -277,35 +290,17 @@ public function setMessage( $msg, $status){
 }
 
 
-public function setStatusMessageBlock(){
-
-	
-	$messageBox = new Session('statusMessage');
-	
-	$status = $messageBox->getData('status');
-	$message = $messageBox->getData('message');
-	$messageBox->clearData();
-	
-	if(!is_null($status) && !is_null($message))
-		$this->setBlock('messageBlock',array('message'=>$message,'status'=>$status));
-	
-}
-
-
 
 public function route(){
 	
 	if(class_exists('Tlab\\Controllers\\'.$this->getController())) {
        $rc = new \ReflectionClass('Tlab\\Controllers\\'.$this->getController());
        if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($this->getAction())) {
-       		$this->invokeAction($rc);
-		}else{
-			$this->invokeNotFoundAction();
+       		return $this->invokeAction($rc);
 		}
-	}else{
-		$this->invokeNotFoundAction();
 	}
 	
+	return $this->invokeNotFoundAction();
 }
 
 
@@ -315,14 +310,14 @@ private function invokeNotFoundAction()
 	$this->_action = 'indexAction';
 	$this->_httpCode = 'HTTP/1.0 404 Not found';
 	$rc = new \ReflectionClass('Tlab\\Controllers\\' . $this->getController());
-	$this->invokeAction($rc);
+	return $this->invokeAction($rc);
 }
 
 private function invokeAction($rc)
 {
 	$controller = $rc->newInstance($this);
 	$method = $rc->getMethod($this->getAction());
-	$method->invoke($controller, $this->_httpRequest, $this->_httpResponse);
+	return $method->invoke($controller, $this->_httpRequest, $this->_httpResponse);
 }
 
 
@@ -336,45 +331,10 @@ public function getAction() {
 	return $this->_action;
 }
 
-public function getBody() {
-	return $this->_body;
-}
 
-public function setBody($body) {
-	$this->_body = $body;
-}
 
 public function getDatabaseInstace(){
 	return $this->_database;
-}
-
-function setBlock($blockName, $arg = NULL){
-
-	$view = new View();
-	if(!is_null($arg))
-		foreach($arg as $key=>$value)
-			$view->$key = $value;		
-
-	$result = $view->render($this->_template, $blockName);
-	$this->setHeadTags($view->getHead());
-	$this->_blockList[$blockName] = $result;
-}
-
-
-function getBlock($blockName){
-	
-	if(isset($this->_blockList[$blockName]))
-		return $this->_blockList[$blockName];
-	else
-		return '';
-	
-}
-
-function clearBlock($blockName){
-
-	if(isset($this->_blockList[$blockName]))
-        unset($this->_blockList[$blockName]);
-	
 }
 
 
@@ -432,83 +392,6 @@ public function linkTo($controller, $action = NULL, $params = NULL){
 }
 
 
-public function setHeadTags($str)
-{
-	$this->_headTags[] = $str;
-} 
-
-public function getHeadTags()
-{
-	
-	$result = '';
-	if(count($this->_headTags))	
-		foreach($this->_headTags as $item)
-			$result .= $item;
-		
-	return $result;
-}
-
-
-public function setFooterTags($str){
-
-	$this->_footerTags[] = $str;
-
-}
-
-public function getFooterTags(){
-
-	$result = '';
-	if(count($this->_footerTags))
-		foreach($this->_footerTags as $item)
-		$result .= $item;
-
-	return $result;
-}
-
-
-
-public function setMetaTags($name, $content){
-	
-    $this->_metaTags[$name] = $content;	
-}
-
-
-public function getMetaTags(){
-	
-	$str = '';
-	if(is_null($this->_metaTags) || !is_array($this->_metaTags) || !count($this->_metaTags)){
-		$this->_metaTags['keywords'] = _META_KEYWORDS;
-		$this->_metaTags['description'] = _META_DESCRIPTION;
-	}
-	
-	foreach($this->_metaTags as $k=>$v)
-	      $str .= '<meta name="'.$k.'" content="'.$v.'" />'.chr(10);
-		
-		
-		
-	return $str;
-}
-
-
-public function setTitle($title){
-	
-	$this->_pageTitle = $title;
-	
-}
-
-
-
-public function getTitle(){
-	
-	if(is_null($this->_pageTitle))
-	   return _TITLE;
-	elseif(trim($this->_pageTitle) == '')
-        return _TITLE;
-    else
-        return $this->_pageTitle; //.' - '._TITLE;
-	
-}
-
 
 public function setTemplate($template){
 	$this->_template = $template;		
@@ -539,31 +422,20 @@ public function getLayout(){
 
 public function run()
 {
-	$this->route();
-	$this->Output();
-	$this->closeDB();
-}
-
-
-
-
-
-
-public function Output(){
 	
 	if(! $this->_httpResponse instanceof Response){
 		throw new \Exception('Bad Response Object');
 	}
 	
-	ob_start();
-	include(_CONFIG_TEMPLATE_PATH._DS.$this->_template._DS.$this->_layout.'.phtml');
-	$content = ob_get_clean();
+	$content = $this->route();
 	
 	$this->_httpResponse->setContent($content);
 	$this->_httpResponse->send();
-		
 	
+	
+	$this->closeDB();
 }
+
 
     
 }

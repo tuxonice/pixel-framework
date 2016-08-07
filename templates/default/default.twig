@@ -1,0 +1,20 @@
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	{% block head %}
+    	<title>{% block title %}{% endblock %} - My Webpage</title>
+    {% endblock %}
+</head>
+<body>
+{% block content %}
+
+{% endblock %}
+{% block footer %}
+<div id="footer-wrap">
+	<footer id="footer" class="container">
+		Footer block
+	</footer>	
+</div>
+{% endblock %}
+</body>
+</html>

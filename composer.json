@@ -11,6 +11,7 @@
         "php": ">=5.5.0",
         "monolog/monolog": "^1.17",
 		"phpmailer/phpmailer": "v5.2.16",
-        "symfony/http-foundation": "v3.1.2"
+        "symfony/http-foundation": "v3.1.2",
+        "twig/twig": "v1.24.1"
     }
 }
