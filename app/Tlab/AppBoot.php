@@ -12,28 +12,28 @@ use Symfony\Component\HttpFoundation\Response;
 class AppBoot {
 	
 
-protected $_controller, $_action, $_params, $_body;
-protected $_database = NULL;
-protected $_twig = NULL;
+    protected $_controller, $_action, $_params, $_body;
+    protected $_database = NULL;
+    protected $_twig = NULL;
 
-protected $_template = NULL;
-protected $_layout = NULL; //layout actual
-protected $_langISO = NULL; //ISO code da lingua actual
-protected $_settings = NULL;
+    protected $_template = NULL;
+    protected $_layout = NULL; //layout actual
+    protected $_langISO = NULL; //ISO code da lingua actual
+    protected $_settings = NULL;
 
-protected $_httpRequest = NULL;
-protected $_httpResponse = NULL;	
+    protected $_httpRequest = NULL;
+    protected $_httpResponse = NULL;	
 
-static $_instance;
+    static $_instance;
 
 
-public static function create($settings = NULL){
+    public static function create($settings = NULL){
 	
-	if( ! (self::$_instance instanceof self) )
-		self::$_instance = new self($settings);
+        if( ! (self::$_instance instanceof self) )
+            self::$_instance = new self($settings);
 	
-return self::$_instance;
-}
+        return self::$_instance;
+    }
 
 
 public static function getInstance(){
@@ -313,14 +313,29 @@ private function invokeNotFoundAction()
 	return $this->invokeAction($rc);
 }
 
-private function invokeAction($rc)
+private function invokeAction($rc, $params = null)
 {
 	$controller = $rc->newInstance($this);
 	$method = $rc->getMethod($this->getAction());
-	return $method->invoke($controller, $this->_httpRequest, $this->_httpResponse);
+	return $method->invoke($controller, $this->_httpRequest, $this->_httpResponse, $params);
 }
 
 
+public function renderController($controller, $action, $params = null)
+{
+    $controller = $controller.'Controller';
+    $action = $action.'Action';
+    
+    if(class_exists('Tlab\\Controllers\\'.$controller)) {
+       $rc = new \ReflectionClass('Tlab\\Controllers\\'.$controller);
+       if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($action)) {
+       		$controller = $rc->newInstance($this);
+            $method = $rc->getMethod($action);
+            return $method->invoke($controller, $this->_httpRequest, $this->_httpResponse, $params);
+		}
+	}
+    
+}
 
 
 public function getController() {

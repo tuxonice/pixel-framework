@@ -26,12 +26,23 @@ public function indexAction(Request $request, Response $response){
      echo('</pre>');
      */
      
-     $templateData = array('langISO'=>$langISO,'name'=>'Fabien');
+     
+     $menu = $this->app->renderController('index','menu');
+     
+     
+     
+     $templateData = array('langISO'=>$langISO,'name'=>'Fabien', 'menu' => $menu );
      return $this->app->render('default/index/index.twig', $templateData);
          
 }
 
+public function menuAction(Request $request, Response $response, $params = array()){
+    
+    
+    $templateData = array();
+     return $this->app->render('default/menu.twig', $templateData);
+    
     
 
 }
-
+}
