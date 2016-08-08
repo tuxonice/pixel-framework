@@ -5,8 +5,6 @@ use Tlab\Controllers;
 use Tlab\Libraries\Session;
 use Tlab\Libraries\Database;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-
 
 
 class AppBoot {
@@ -17,12 +15,11 @@ class AppBoot {
     protected $_twig = NULL;
 
     protected $_template = NULL;
-    protected $_layout = NULL; //layout actual
     protected $_langISO = NULL; //ISO code da lingua actual
     protected $_settings = NULL;
 
     protected $_httpRequest = NULL;
-    protected $_httpResponse = NULL;	
+    	
 
     static $_instance;
 
@@ -48,7 +45,7 @@ public static function getInstance(){
 private function __construct($settings) {
 
 	$this->_httpRequest = Request::createFromGlobals();
-	$this->_httpResponse = new Response();
+	
 	
 	if(!is_null($settings)){
 		$this->_settings = $settings;
@@ -75,7 +72,6 @@ private function __construct($settings) {
 	
 	$this->_blocksList = array();
 	$this->_headTags = array();
-	$this->_layout = $this->getConfig('settings.page_layout');
 	$this->_template = $this->getConfig('settings.page_template');
 	
 	$this->templateLoader();
@@ -85,13 +81,13 @@ private function __construct($settings) {
 
 private function templateLoader(){
 	
-	
 	$loader = new \Twig_Loader_Filesystem(_CONFIG_TEMPLATE_PATH);
 	$this->_twig = new \Twig_Environment($loader, array(
 			'cache' => _CONFIG_TEMPLATE_PATH._DS.'_cache',
 	));
 	
 }
+
 
 
 public function render($file,$params){
@@ -200,10 +196,7 @@ private function _connectDB(){
 	}
 	
 	
-	public function getResponse()
-	{
-		return $this->_httpResponse;
-	}
+	
 
 protected function sessionStart() {
 
@@ -317,7 +310,7 @@ private function invokeAction($rc, $params = null)
 {
 	$controller = $rc->newInstance($this);
 	$method = $rc->getMethod($this->getAction());
-	return $method->invoke($controller, $this->_httpRequest, $this->_httpResponse, $params);
+	return $method->invoke($controller, $this->_httpRequest, $params);
 }
 
 
@@ -331,7 +324,7 @@ public function renderController($controller, $action, $params = null)
        if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($action)) {
        		$controller = $rc->newInstance($this);
             $method = $rc->getMethod($action);
-            return $method->invoke($controller, $this->_httpRequest, $this->_httpResponse, $params);
+            return $method->invoke($controller, $this->_httpRequest, $params);
 		}
 	}
     
@@ -417,37 +410,11 @@ public function getTemplate(){
 }
 
 
-public function setLayout($layout){
-
-	$this->_layout = $layout;
-	
-}
-
-
-public function getLayout(){
-	
-	return $this->_layout;	
-	
-}
-
-
-
-
-
 
 public function run()
 {
-	
-	if(! $this->_httpResponse instanceof Response){
-		throw new \Exception('Bad Response Object');
-	}
-	
-	$content = $this->route();
-	
-	$this->_httpResponse->setContent($content);
-	$this->_httpResponse->send();
-	
-	
+	$response = $this->route();
+	$response->send();
 	$this->closeDB();
 }
 

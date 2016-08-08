@@ -53,7 +53,7 @@ return array(
         'email_admin_email' => 'develop@example.com',
         'email_admin_name' => 'TLAB',
         'page_template' => 'default',
-        'page_layout' => 'default',
+        
         
     ),
 );
