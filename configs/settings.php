@@ -30,7 +30,7 @@ return array(
 	'database' => array(
 			'host' => 'localhost',
 			'username' => 'root',
-			'password' => 'xampp',
+			'password' => 'votum',
 			'name' => 'pixel',
             'prefix' => '',
 		),

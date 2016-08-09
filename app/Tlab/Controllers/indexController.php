@@ -29,11 +29,7 @@ public function indexAction(Request $request){
      */
      
      
-     //new dBug($this->app->renderController('index','menu'));
-     $menu = '';
-     
-     
-     $templateData = array('langISO'=>$langISO,'name'=>'Fabien', 'menu' => $menu );
+     $templateData = array('langISO'=>$langISO,'name'=>'Fabien');
      return $this->Render('default/index/index.twig', $templateData);
          
 }

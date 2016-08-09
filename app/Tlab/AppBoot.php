@@ -85,6 +85,19 @@ private function templateLoader(){
 	$this->_twig = new \Twig_Environment($loader, array(
 			'cache' => _CONFIG_TEMPLATE_PATH._DS.'_cache',
 	));
+    
+    
+    $controllerFunction = new \Twig_SimpleFunction('controller', function ($controller,$action) {
+        $response = $this->renderController($controller, $action);
+        return $response;
+    });
+    
+    $renderFunction = new \Twig_SimpleFunction('render', function ($response) {
+        return $response->getContent();
+    });
+    
+    $this->_twig->addFunction($controllerFunction);
+    $this->_twig->addFunction($renderFunction);
 	
 }
 

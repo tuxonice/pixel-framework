@@ -1,10 +1,12 @@
 {% extends "default/default.twig" %}
 
 {% block content %}
+{{ render(controller('index','menu'))|raw }}
 <div>
 <h1>Hello world!</h1>
 </div>
 {% endblock %}  
+
 
 
 {% block menu %}
