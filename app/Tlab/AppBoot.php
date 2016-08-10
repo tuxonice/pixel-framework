@@ -1,6 +1,8 @@
 <?php
 namespace Tlab;
 
+use Ospinto\dBug;
+
 use Tlab\Controllers;
 use Tlab\Libraries\Session;
 use Tlab\Libraries\Database;
@@ -55,8 +57,8 @@ private function __construct($settings) {
 
 	$splits = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 
-    $validLang = false;
-	if(!empty($splits[0]))
+	$validLang = false;
+	if(array_key_exists(0, $splits))
 		$validLang = $this->processLanguage($splits);
 
 	$this->_controller = $this->processController($splits);
