@@ -1,21 +1,27 @@
 <?php
 namespace Tlab\Libraries;
+use Symfony\Component\HttpFoundation\Response;
+
 use Tlab\AppBoot;
 
 
 class Controller{
 	
-	protected $app = NULL;
+	protected $app = null;
+	protected $httpResponse = null;
 	
 public function	__construct(AppBoot $app){
 	
 	$this->app = $app;
-	$langISO = $app->getLangISO();
-	$this->app->setBlock('footerBlock', array('langISO'=>$langISO,'controller'=>$app->getController()));
-    $this->app->setStatusMessageBlock();
-    
-                
+	$this->httpResponse = new Response();
+	                
 }
 
+protected function Render($file, $params = null){
+	
+	$content = $this->app->render($file,$params);
+	return $this->httpResponse->setContent($content);
+	
+}
 
 }

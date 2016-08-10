@@ -3,14 +3,17 @@ namespace Tlab\Libraries;
 
 class View extends \ArrayObject {
 	
-public $_head = NULL;
-public $_footer = NULL;	
+	public $_head = NULL;
+	public $_footer = NULL;	
 	
 	public function __construct() {
-	parent::__construct(array(), \ArrayObject::ARRAY_AS_PROPS);
-}
+		parent::__construct(array(), \ArrayObject::ARRAY_AS_PROPS);
+	}
 
 public function render($templateName, $fileName, $controller = NULL) {
+	
+	
+	
 	ob_start();
 	if(is_null($controller))
 		include(_CONFIG_TEMPLATE_PATH._DS.$templateName._DS.'blocks'._DS.$fileName.'.phtml');
