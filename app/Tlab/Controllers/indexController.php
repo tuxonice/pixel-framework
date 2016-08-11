@@ -1,30 +1,46 @@
 <?php
 namespace Tlab\Controllers;
 
-use Tlab\AppBoot;
+use Ospinto\dBug;
+
 use Tlab\Libraries\Controller;
-use Tlab\Libraries\View;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class indexController extends Controller
 {
 
+/**
+ * 
+ * @param Request $request
+ * @param Response $response
+ */
+public function indexAction(Request $request){
 
-public function indexAction(){
+	 $database = $this->app->getDatabaseInstace();
+     $langISO = $this->app->getLangISO();
 
-	 /** @var AppBoot $app */
-     $app = AppBoot::getInstance();
-     $database = $app->getDatabaseInstace();
-     $langISO = $app->getLangISO();
-
-          
-     $view = new View();
-     $view->langISO = $langISO;
-     $result = $view->render($app->getTemplate(),'index','index');
-     $app->setBody($result);
-     $app->setHeadTags($view->getHead());
-
+     /*
+     echo('<pre>');
+     var_dump($request);
+     echo('-----------------');
+     var_dump($response);
+     echo('</pre>');
+     */
+     
+     
+     $templateData = array('langISO'=>$langISO,'name'=>'Fabien');
+     return $this->Render('default/index/index.twig', $templateData);
+         
 }
 
+public function menuAction(Request $request, $params = array()){
     
-}
+    
+    $templateData = array();
+     return $this->Render('default/menu.twig', $templateData);
+    
+    
 
+}
+}

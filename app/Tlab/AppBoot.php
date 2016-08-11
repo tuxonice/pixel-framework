@@ -1,44 +1,38 @@
 <?php
 namespace Tlab;
 
+use Ospinto\dBug;
+
 use Tlab\Controllers;
-use Tlab\Libraries\View;
 use Tlab\Libraries\Session;
 use Tlab\Libraries\Database;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 
 class AppBoot {
 	
 
-protected $_controller, $_action, $_params, $_body;
-protected $_blockList = NULL;
-protected $_database = NULL;
-protected $_headTags = NULL;
-protected $_footerTags = NULL;
+    protected $_controller, $_action, $_params, $_body;
+    protected $_database = NULL;
+    protected $_twig = NULL;
 
-protected $_template = NULL;
-protected $_layout = NULL; //layout actual
-protected $_langISO = NULL; //ISO code da lingua actual
-protected $_settings = NULL;
+    protected $_template = NULL;
+    protected $_langISO = NULL; //ISO code da lingua actual
+    protected $_settings = NULL;
 
-protected $_metaTags = NULL; //array
-protected $_pageTitle = NULL;
+    protected $_httpRequest = NULL;
+    	
 
-protected $_httpRequest = NULL;
-protected $_httpResponse = NULL;	
-
-static $_instance;
+    static $_instance;
 
 
-public static function create($settings = NULL){
+    public static function create($settings = NULL){
 	
-	if( ! (self::$_instance instanceof self) )
-		self::$_instance = new self($settings);
+        if( ! (self::$_instance instanceof self) )
+            self::$_instance = new self($settings);
 	
-return self::$_instance;
-}
+        return self::$_instance;
+    }
 
 
 public static function getInstance(){
@@ -53,7 +47,7 @@ public static function getInstance(){
 private function __construct($settings) {
 
 	$this->_httpRequest = Request::createFromGlobals();
-	$this->_httpResponse = new Response();
+	
 	
 	if(!is_null($settings)){
 		$this->_settings = $settings;
@@ -63,8 +57,8 @@ private function __construct($settings) {
 
 	$splits = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 
-    $validLang = false;
-	if(!empty($splits[0]))
+	$validLang = false;
+	if(array_key_exists(0, $splits))
 		$validLang = $this->processLanguage($splits);
 
 	$this->_controller = $this->processController($splits);
@@ -80,10 +74,40 @@ private function __construct($settings) {
 	
 	$this->_blocksList = array();
 	$this->_headTags = array();
-	$this->_layout = $this->getConfig('settings.page_layout');
 	$this->_template = $this->getConfig('settings.page_template');
 	
+	$this->templateLoader();
 	
+}
+
+
+private function templateLoader(){
+	
+	$loader = new \Twig_Loader_Filesystem(_CONFIG_TEMPLATE_PATH);
+	$this->_twig = new \Twig_Environment($loader, array(
+			'cache' => _CONFIG_TEMPLATE_PATH._DS.'_cache',
+	));
+    
+    
+    $controllerFunction = new \Twig_SimpleFunction('controller', function ($controller,$action) {
+        $response = $this->renderController($controller, $action);
+        return $response;
+    });
+    
+    $renderFunction = new \Twig_SimpleFunction('render', function ($response) {
+        return $response->getContent();
+    });
+    
+    $this->_twig->addFunction($controllerFunction);
+    $this->_twig->addFunction($renderFunction);
+	
+}
+
+
+
+public function render($file,$params){
+	
+	return $this->_twig->render($file,$params);
 }
 
     private function processLanguage($splits)
@@ -187,10 +211,7 @@ private function _connectDB(){
 	}
 	
 	
-	public function getResponse()
-	{
-		return $this->_httpResponse;
-	}
+	
 
 protected function sessionStart() {
 
@@ -277,46 +298,51 @@ public function setMessage( $msg, $status){
 }
 
 
-public function setStatusMessageBlock(){
-
-	
-	$messageBox = new Session('statusMessage');
-	
-	$status = $messageBox->getData('status');
-	$message = $messageBox->getData('message');
-	$messageBox->clearData();
-	
-	if(!is_null($status) && !is_null($message))
-		$this->setBlock('messageBlock',array('message'=>$message,'status'=>$status));
-	
-}
-
-
 
 public function route(){
 	
-	
 	if(class_exists('Tlab\\Controllers\\'.$this->getController())) {
        $rc = new \ReflectionClass('Tlab\\Controllers\\'.$this->getController());
-       if($rc->isSubclassOf('Tlab\\Libraries\\Controller')) {
-           if($rc->hasMethod($this->getAction())) {
-           	  $controller = $rc->newInstance();
-              $method = $rc->getMethod($this->getAction());
-              $method->invoke($controller);
-           }else{
-               $this->actionDoesNotExist();
-
-           }
-	   } else {
-	   		//NÃO É SUBCLASS DE CONTROLLER
-           $this->actionDoesNotExist();
-			}
-	} else {
-		//NÃO EXISTE CONTROLLER
-        $this->actionDoesNotExist();
+       if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($this->getAction())) {
+       		return $this->invokeAction($rc);
+		}
 	}
+	
+	return $this->invokeNotFoundAction();
+}
 
 
+private function invokeNotFoundAction()
+{
+	$this->_controller = 'errorController';
+	$this->_action = 'indexAction';
+	$this->_httpCode = 'HTTP/1.0 404 Not found';
+	$rc = new \ReflectionClass('Tlab\\Controllers\\' . $this->getController());
+	return $this->invokeAction($rc);
+}
+
+private function invokeAction($rc, $params = null)
+{
+	$controller = $rc->newInstance($this);
+	$method = $rc->getMethod($this->getAction());
+	return $method->invoke($controller, $this->_httpRequest, $params);
+}
+
+
+public function renderController($controller, $action, $params = null)
+{
+    $controller = $controller.'Controller';
+    $action = $action.'Action';
+    
+    if(class_exists('Tlab\\Controllers\\'.$controller)) {
+       $rc = new \ReflectionClass('Tlab\\Controllers\\'.$controller);
+       if($rc->isSubclassOf('Tlab\\Libraries\\Controller') && $rc->hasMethod($action)) {
+       		$controller = $rc->newInstance($this);
+            $method = $rc->getMethod($action);
+            return $method->invoke($controller, $this->_httpRequest, $params);
+		}
+	}
+    
 }
 
 
@@ -328,45 +354,10 @@ public function getAction() {
 	return $this->_action;
 }
 
-public function getBody() {
-	return $this->_body;
-}
 
-public function setBody($body) {
-	$this->_body = $body;
-}
 
 public function getDatabaseInstace(){
 	return $this->_database;
-}
-
-function setBlock($blockName, $arg = NULL){
-
-	$view = new View();
-	if(!is_null($arg))
-		foreach($arg as $key=>$value)
-			$view->$key = $value;		
-
-	$result = $view->render($this->_template, $blockName);
-	$this->setHeadTags($view->getHead());
-	$this->_blockList[$blockName] = $result;
-}
-
-
-function getBlock($blockName){
-	
-	if(isset($this->_blockList[$blockName]))
-		return $this->_blockList[$blockName];
-	else
-		return '';
-	
-}
-
-function clearBlock($blockName){
-
-	if(isset($this->_blockList[$blockName]))
-        unset($this->_blockList[$blockName]);
-	
 }
 
 
@@ -424,83 +415,6 @@ public function linkTo($controller, $action = NULL, $params = NULL){
 }
 
 
-public function setHeadTags($str)
-{
-	$this->_headTags[] = $str;
-} 
-
-public function getHeadTags()
-{
-	
-	$result = '';
-	if(count($this->_headTags))	
-		foreach($this->_headTags as $item)
-			$result .= $item;
-		
-	return $result;
-}
-
-
-public function setFooterTags($str){
-
-	$this->_footerTags[] = $str;
-
-}
-
-public function getFooterTags(){
-
-	$result = '';
-	if(count($this->_footerTags))
-		foreach($this->_footerTags as $item)
-		$result .= $item;
-
-	return $result;
-}
-
-
-
-public function setMetaTags($name, $content){
-	
-    $this->_metaTags[$name] = $content;	
-}
-
-
-public function getMetaTags(){
-	
-	$str = '';
-	if(is_null($this->_metaTags) || !is_array($this->_metaTags) || !count($this->_metaTags)){
-		$this->_metaTags['keywords'] = _META_KEYWORDS;
-		$this->_metaTags['description'] = _META_DESCRIPTION;
-	}
-	
-	foreach($this->_metaTags as $k=>$v)
-	      $str .= '<meta name="'.$k.'" content="'.$v.'" />'.chr(10);
-		
-		
-		
-	return $str;
-}
-
-
-public function setTitle($title){
-	
-	$this->_pageTitle = $title;
-	
-}
-
-
-
-public function getTitle(){
-	
-	if(is_null($this->_pageTitle))
-	   return _TITLE;
-	elseif(trim($this->_pageTitle) == '')
-        return _TITLE;
-    else
-        return $this->_pageTitle; //.' - '._TITLE;
-	
-}
-
 
 public function setTemplate($template){
 	$this->_template = $template;		
@@ -511,61 +425,14 @@ public function getTemplate(){
 }
 
 
-public function setLayout($layout){
-
-	$this->_layout = $layout;
-	
-}
-
-
-public function getLayout(){
-	
-	return $this->_layout;	
-	
-}
-
-
-
-
-
 
 public function run()
 {
-	$this->route();
-	$this->Output();
+	$response = $this->route();
+	$response->send();
 	$this->closeDB();
 }
 
 
-
-
-
-
-public function Output(){
-	
-	if(! $this->_httpResponse instanceof Response){
-		throw new \Exception('Bad Response Object');
-	}
-	
-	ob_start();
-	include(_CONFIG_TEMPLATE_PATH._DS.$this->_template._DS.$this->_layout.'.phtml');
-	$content = ob_get_clean();
-	
-	$this->_httpResponse->setContent($content);
-	$this->_httpResponse->send();
-		
-	
-}
-
-    public function actionDoesNotExist()
-    {
-        //NÃO EXISTE ACTION
-        $this->_controller = 'errorController';
-        $this->_action = 'indexAction';
-        $this->_httpCode = 'HTTP/1.0 404 Not found';
-        $rc = new \ReflectionClass('Tlab\\Controllers\\' . $this->getController());
-        $controller = $rc->newInstance();
-        $method = $rc->getMethod($this->getAction());
-        $method->invoke($controller);
-    }
+    
 }
