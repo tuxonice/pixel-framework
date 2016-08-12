@@ -3,6 +3,7 @@ define('_DS','/');
 
 define('_CONFIG_LIVE_SITE', 'http://'.$_SERVER['HTTP_HOST']);
 define('_CONFIG_TEMPLATE_PATH',__DIR__ . '/../templates/');
+define('_CONFIG_TEMPLATE_CACHE_PATH',false);
 
 define('_CONFIG_MID_RANGE',3);
 define('_CONFIG_REG_PAGE',9);
