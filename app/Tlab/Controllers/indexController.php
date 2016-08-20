@@ -1,7 +1,6 @@
 <?php
 namespace Tlab\Controllers;
 
-use Ospinto\dBug;
 
 use Tlab\Libraries\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +26,9 @@ public function indexAction(Request $request){
      var_dump($response);
      echo('</pre>');
      */
+     
+     //$tags = $database->table('tags')->where('id', '>', 100)->get();
+     //new dBug($tags);
      
      
      $templateData = array('langISO'=>$langISO,'name'=>'Fabien');

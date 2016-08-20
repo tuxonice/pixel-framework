@@ -1,7 +1,8 @@
 <?php
 namespace Tlab;
 
-use Ospinto\dBug;
+//use Ospinto\dBug;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 use Tlab\Controllers;
 use Tlab\Libraries\Session;
@@ -192,14 +193,40 @@ public function render($file,$params){
 
 private function _connectDB(){
 	
-	$params = array();
+    $capsule = new Capsule;
+    
+    $capsule->addConnection([
+        'driver'    => 'mysql',
+        'host'      => $this->getConfig('database.host'),
+        'database'  => $this->getConfig('database.name'),
+        'username'  => $this->getConfig('database.username'),
+        'password'  => $this->getConfig('database.password'),
+        'charset'   => 'utf8',
+        'collation' => 'utf8_unicode_ci',
+        'prefix'    => $this->getConfig('database.prefix'),
+    ]);
+    
+    // Make this Capsule instance available globally via static methods... (optional)
+    //$capsule->setAsGlobal();
+    
+    // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
+    $capsule->bootEloquent();
+    
+    $this->_database = $capsule->getConnection();
+    
+    /*
+    $params = array();
 	$params['host'] = $this->getConfig('database.host');
 	$params['username'] = $this->getConfig('database.username');
 	$params['password'] = $this->getConfig('database.password');
 	$params['dbname'] = $this->getConfig('database.name');
 	$params['dbprefix'] = $this->getConfig('database.prefix');
+	*/
 	
-	$this->_database = Database::getInstance($params);
+	
+	
+	
+	//$this->_database = Database::getInstance($params);
 	
 	
 	
