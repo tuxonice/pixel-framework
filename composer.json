@@ -13,6 +13,7 @@
 		"phpmailer/phpmailer": "v5.2.16",
         "symfony/http-foundation": "v3.1.2",
         "twig/twig": "v1.24.1",
-        "illuminate/database": "v5.2.43"
+        "illuminate/database": "v5.2.43",
+        "robmorgan/phinx": "v0.6.4" 
     }
 }
