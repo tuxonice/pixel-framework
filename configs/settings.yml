@@ -1,0 +1,25 @@
+database:
+    host: localhost
+    username: root
+    password: xampp
+    name: pixel
+    prefix: ''
+email:
+    host: localhost
+    username: develop@example.com
+    password: xxx
+    name: TLAB
+    email: develop@example.com
+settings:
+    displayErrorDetails: true
+    default_lang_iso: en
+    timezone: Europe/Lisbon
+    page_suffix: html
+    #main_path' => dirname($_SERVER['DOCUMENT_ROOT']),
+    tmp_path: tmp,
+    logs_path: logs
+    cache_path: cache
+    email_admin_email: develop@example.com
+    email_admin_name: TLAB
+    page_template: default
+    

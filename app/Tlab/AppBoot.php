@@ -8,6 +8,8 @@ use Tlab\Controllers;
 use Tlab\Libraries\Session;
 use Tlab\Libraries\Database;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Exception\ParseException;
 
 
 class AppBoot {
@@ -27,10 +29,10 @@ class AppBoot {
     static $_instance;
 
 
-    public static function create($settings = NULL){
+    public static function create($configFile = NULL){
 	
         if( ! (self::$_instance instanceof self) )
-            self::$_instance = new self($settings);
+            self::$_instance = new self($configFile);
 	
         return self::$_instance;
     }
@@ -45,16 +47,17 @@ public static function getInstance(){
 	
 }
 
-private function __construct($settings) {
+private function __construct($configFile) {
 
 	$this->_httpRequest = Request::createFromGlobals();
 	
-	
-	if(!is_null($settings)){
-		$this->_settings = $settings;
+	try {
+	    $this->_settings = Yaml::parse(file_get_contents($configFile));
+	} catch (ParseException $e) {
+	    printf("Unable to parse the YAML string: %s", $e->getMessage());
 	}
-
-    $this->init();
+	
+	$this->init();
 
 	$splits = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 
