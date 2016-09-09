@@ -7,4 +7,5 @@ composer.phar
 /.settings
 .buildpath
 .project
-
+php-cs-fixer.phar
+.idea/

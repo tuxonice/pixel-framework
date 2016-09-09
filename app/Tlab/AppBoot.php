@@ -1,12 +1,14 @@
 <?php
 namespace Tlab;
 
-use Ospinto\dBug;
 
 use Tlab\Controllers;
 use Tlab\Libraries\Session;
-use Tlab\Libraries\Database;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Yaml\Yaml;
+use Tlab\DI\Container;
+use Tlab\Libraries\Database;
+use Symfony\Component\Yaml\Exception\ParseException;
 
 
 class AppBoot {
@@ -17,19 +19,21 @@ class AppBoot {
     protected $_twig = NULL;
 
     protected $_template = NULL;
-    protected $_langISO = NULL; //ISO code da lingua actual
+    protected $_langISO = NULL; //language ISO code 
     protected $_settings = NULL;
 
     protected $_httpRequest = NULL;
+    protected $_userAutentication = null;
+    protected $_diContainer = null;
     	
 
     static $_instance;
 
 
-    public static function create($settings = NULL){
+    public static function create($configFile = NULL){
 	
         if( ! (self::$_instance instanceof self) )
-            self::$_instance = new self($settings);
+            self::$_instance = new self($configFile);
 	
         return self::$_instance;
     }
@@ -44,16 +48,22 @@ public static function getInstance(){
 	
 }
 
-private function __construct($settings) {
+private function __construct($configFile) {
 
 	$this->_httpRequest = Request::createFromGlobals();
-	
-	
-	if(!is_null($settings)){
-		$this->_settings = $settings;
-	}
 
-    $this->init();
+    $services   = include __DIR__.'/../../configs/services.php';
+    $parameters = include __DIR__.'/../../configs/parameters.php';
+
+    $this->_diContainer = new Container($services, $parameters);
+	
+	try {
+	    $this->_settings = Yaml::parse(file_get_contents($configFile));
+	} catch (ParseException $e) {
+	    printf("Unable to parse the YAML string: %s", $e->getMessage());
+	}
+	
+	$this->init();
 
 	$splits = explode('/', trim($_SERVER['REQUEST_URI'],'/'));
 
@@ -80,8 +90,12 @@ private function __construct($settings) {
 	
 }
 
+    public function getContainer(){
+        return $this->_diContainer;
+    }
 
-private function templateLoader(){
+
+    private function templateLoader(){
 	
 	$loader = new \Twig_Loader_Filesystem(_CONFIG_TEMPLATE_PATH);
 	$this->_twig = new \Twig_Environment($loader, array(
@@ -190,20 +204,19 @@ public function render($file,$params){
     }
 
 
-private function _connectDB(){
-	
-	$params = array();
-	$params['host'] = $this->getConfig('database.host');
-	$params['username'] = $this->getConfig('database.username');
-	$params['password'] = $this->getConfig('database.password');
-	$params['dbname'] = $this->getConfig('database.name');
-	$params['dbprefix'] = $this->getConfig('database.prefix');
-	
-	$this->_database = Database::getInstance($params);
-	
-	
-	
-}
+    private function _connectDB()
+    {
+        $dbInstance = $this->getContainer()->get(Database::class);
+        $this->_database = $dbInstance->getInstance()->getConnection();
+    }
+
+
+    public function getAutentication()
+    {
+
+        return $this->_userAutentication;
+
+    }
     
 	public function getRequest()
 	{
