@@ -9,6 +9,7 @@ class Controller{
 	
 	protected $app = null;
 	protected $httpResponse = null;
+	protected $authentication = null;
 	
 public function	__construct(AppBoot $app){
 	
@@ -23,5 +24,27 @@ protected function Render($file, $params = null){
 	return $this->httpResponse->setContent($content);
 	
 }
+
+
+	protected function gateKeeper($role = array())
+	{
+
+		$this->authentication = $this->app->getContainer()->get(Authentication::class);
+		return $this->authentication->isLogged();
+
+
+	}
+
+
+	protected function authenticate($email, $password)
+	{
+
+		if(is_null($this->authentication)){
+			$this->authentication = $this->app->getContainer()->get(Authentication::class);
+		}
+
+		return $this->authentication->checkUserLogin($email, $password);
+	}
+
 
 }

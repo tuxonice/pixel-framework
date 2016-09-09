@@ -8,3 +8,4 @@ composer.phar
 .buildpath
 .project
 php-cs-fixer.phar
+.idea/

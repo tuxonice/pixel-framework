@@ -1,52 +1,49 @@
 <?php
 namespace Tlab\Libraries;
-use Tlab\Libraries\TlabPDO;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 
 class Database {
+
 	
-	public $dbh = NULL;
-	static $_instance;
-	
-	
-	
-	public static function getInstance($config = NULL){
-	
-		if((self::$_instance instanceof self))
-			return self::$_instance;
-		elseif(!is_null($config))
-			self::$_instance = new self($config['host'],
-				 $config['username'],
-				 $config['password'], 
-				 $config['dbname'],
-				 $config['dbprefix']);
-		else
-			die('Error Connecting to DB!');
-			
-	return self::$_instance;
-	}
+	protected $dbConnection = null;
 	
 	
 
-    private	function __construct( $host='localhost', $user, $pass, $db='', $table_prefix='') {
-		
-		
-	   try{
-	       $this->dbh = new TlabPDO("mysql:host=$host;dbname=$db", $user, $pass, $driver_options = array(), $table_prefix);
-	       $this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-	   }catch(PDOException $e){
-	   	
-	   	echo($e->getMessage());
-	   	exit;
-	   	
-	   }
-		
-        $this->dbh->exec("SET NAMES 'utf8'");
-		
+	public function __construct($arguments)
+	{
+
+		$capsule = new Capsule;
+
+		$capsule->addConnection([
+			'driver'    => $arguments['driver'],
+			'host'      => $arguments['host'],
+			'database'  => $arguments['dbname'],
+			'username'  => $arguments['username'],
+			'password'  => $arguments['password'],
+			'charset'   => $arguments['charset'],
+			'collation' => $arguments['collation'],
+			'prefix'    => $arguments['prefix']
+		]);
+
+		// Make this Capsule instance available globally via static methods... (optional)
+		//$capsule->setAsGlobal();
+
+		// Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
+		$capsule->bootEloquent();
+
+		$this->dbConnection = $capsule->getConnection();
+
 	}
 	
+	public function getInstance(){
+		
+		return $this;
+	}
 
-	
-    
+	public function getConnection(){
+
+		return $this->dbConnection;
+	}
     
 }

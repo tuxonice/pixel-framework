@@ -1,14 +1,13 @@
 <?php
 namespace Tlab;
 
-//use Ospinto\dBug;
-use Illuminate\Database\Capsule\Manager as Capsule;
 
 use Tlab\Controllers;
 use Tlab\Libraries\Session;
-use Tlab\Libraries\Database;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Yaml\Yaml;
+use Tlab\DI\Container;
+use Tlab\Libraries\Database;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 
@@ -20,10 +19,12 @@ class AppBoot {
     protected $_twig = NULL;
 
     protected $_template = NULL;
-    protected $_langISO = NULL; //ISO code da lingua actual
+    protected $_langISO = NULL; //language ISO code 
     protected $_settings = NULL;
 
     protected $_httpRequest = NULL;
+    protected $_userAutentication = null;
+    protected $_diContainer = null;
     	
 
     static $_instance;
@@ -50,6 +51,11 @@ public static function getInstance(){
 private function __construct($configFile) {
 
 	$this->_httpRequest = Request::createFromGlobals();
+
+    $services   = include __DIR__.'/../../configs/services.php';
+    $parameters = include __DIR__.'/../../configs/parameters.php';
+
+    $this->_diContainer = new Container($services, $parameters);
 	
 	try {
 	    $this->_settings = Yaml::parse(file_get_contents($configFile));
@@ -84,8 +90,12 @@ private function __construct($configFile) {
 	
 }
 
+    public function getContainer(){
+        return $this->_diContainer;
+    }
 
-private function templateLoader(){
+
+    private function templateLoader(){
 	
 	$loader = new \Twig_Loader_Filesystem(_CONFIG_TEMPLATE_PATH);
 	$this->_twig = new \Twig_Environment($loader, array(
@@ -194,46 +204,19 @@ public function render($file,$params){
     }
 
 
-private function _connectDB(){
-	
-    $capsule = new Capsule;
-    
-    $capsule->addConnection([
-        'driver'    => 'mysql',
-        'host'      => $this->getConfig('database.host'),
-        'database'  => $this->getConfig('database.name'),
-        'username'  => $this->getConfig('database.username'),
-        'password'  => $this->getConfig('database.password'),
-        'charset'   => 'utf8',
-        'collation' => 'utf8_unicode_ci',
-        'prefix'    => $this->getConfig('database.prefix'),
-    ]);
-    
-    // Make this Capsule instance available globally via static methods... (optional)
-    //$capsule->setAsGlobal();
-    
-    // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
-    $capsule->bootEloquent();
-    
-    $this->_database = $capsule->getConnection();
-    
-    /*
-    $params = array();
-	$params['host'] = $this->getConfig('database.host');
-	$params['username'] = $this->getConfig('database.username');
-	$params['password'] = $this->getConfig('database.password');
-	$params['dbname'] = $this->getConfig('database.name');
-	$params['dbprefix'] = $this->getConfig('database.prefix');
-	*/
-	
-	
-	
-	
-	//$this->_database = Database::getInstance($params);
-	
-	
-	
-}
+    private function _connectDB()
+    {
+        $dbInstance = $this->getContainer()->get(Database::class);
+        $this->_database = $dbInstance->getInstance()->getConnection();
+    }
+
+
+    public function getAutentication()
+    {
+
+        return $this->_userAutentication;
+
+    }
     
 	public function getRequest()
 	{
