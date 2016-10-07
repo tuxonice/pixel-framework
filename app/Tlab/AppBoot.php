@@ -198,9 +198,11 @@ public function render($file,$params){
         $this->sessionStart();
         date_default_timezone_set($this->getConfig('settings.timezone'));
         error_reporting(E_ALL);
-		ini_set('display_errors', 1);
-        ini_set('log_errors', 1);
-        ini_set('error_log', $this->getConfig('settings.logs_path')._DS.'error_log.txt');
+		ini_set('display_errors', $this->getConfig('debug.display_errors'));
+		if($this->getConfig('debug.display_errors')){
+		    ini_set('log_errors', 1);
+		    ini_set('error_log', _CONFIG_LOGS_PATH._DS.$this->getConfig('debug.log_file'));
+		}
     }
 
 

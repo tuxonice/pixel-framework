@@ -9,3 +9,6 @@ composer.phar
 .project
 php-cs-fixer.phar
 .idea/
+configs/parameters.php
+configs/phinx.yml
+configs/settings.yml
