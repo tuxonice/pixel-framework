@@ -2,7 +2,6 @@
 namespace Tlab\Libraries;
 
 
-use Tlab\AppBoot;
 
 class Authentication{
 	
