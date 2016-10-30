@@ -74,7 +74,7 @@ class Routing {
                 if(!empty($splits[2]))
                     $splits[2] = preg_replace("/[^A-Za-z0-9_\-\.]/", '', urldecode($splits[2]));
     
-                    $action = str_replace('.'.$this->getConfig('settings.page_suffix'),'',$splits[2]);
+                    $action = str_replace('.'.'html','',$splits[2]);
                     $action = !empty($action)?$action.'Action':'indexAction';
         }
     

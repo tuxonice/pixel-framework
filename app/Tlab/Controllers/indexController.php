@@ -5,6 +5,7 @@ namespace Tlab\Controllers;
 use Tlab\Libraries\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class indexController extends Controller
 {
@@ -38,5 +39,19 @@ public function indexAction(Request $request){
     
     
 
-}
+    }
+    
+    
+    public function testAction(Request $request){
+        
+        
+        Capsule::schema()->create('orders', function($table)
+        {
+            $table->increments('id');
+            $table->string('title');
+        });
+        
+        exit;
+    }
+    
 }
