@@ -7,9 +7,9 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 
 
-class CreateFlightsTable extends Migration
+class {{CLASS_NAME}} extends Migration
 {
-    
+
     /**
      * Run the migrations.
      *
@@ -17,12 +17,7 @@ class CreateFlightsTable extends Migration
      */
     public function up()
     {
-        Capsule::schema()->create('flights', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->string('airline');
-            $table->timestamps();
-        });
+
     }
 
     /**
@@ -32,6 +27,6 @@ class CreateFlightsTable extends Migration
      */
     public function down()
     {
-        Capsule::schema()->drop('flights');
+
     }
 }

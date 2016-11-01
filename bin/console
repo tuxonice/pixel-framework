@@ -9,7 +9,9 @@ set_time_limit(0);
 include __DIR__ . '/../configs/global.php';
 
 use Symfony\Component\Console\Application;
-use Tlab\Command\RunMigrationCommand;
+use Tlab\Command\CreateMigrationCommand;
+use Tlab\Command\MigrateMigrationCommand;
+use Tlab\Command\RollbackMigrationCommand;
 use Phinx\Console\Command;
 use Tlab\DI\Container;
 use Tlab\Libraries\Database;
@@ -20,21 +22,12 @@ $DIContainer = new Container($services, $parameters);
 $dbInstance = $DIContainer->get(Database::class);
 
 
-$app = new Application('Pixel CLI Application', '0.1.0');
+$console = new Application('Pixel CLI Application', '0.1.0');
 
-$app->addCommands(array(
-            new Command\Init(),
-            new Command\Create(),
-            new Command\Migrate(),
-            new Command\Rollback(),
-            new Command\Status(),
-            new Command\Breakpoint(),
-            new Command\Test(),
-            new Command\SeedCreate(),
-            new Command\SeedRun(),
+$console->addCommands(array(
+                new CreateMigrationCommand(),
+                new MigrateMigrationCommand(),
+                new RollbackMigrationCommand(),
+
         ));
-        
-$app->add(new RunMigrationCommand());
-
-
-$app->run();
+$console->run();

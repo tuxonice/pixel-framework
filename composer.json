@@ -14,7 +14,6 @@
         "symfony/http-foundation": "v3.1.2",
         "twig/twig": "v1.24.1",
         "illuminate/database": "v5.2.43",
-        "robmorgan/phinx": "v0.6.4",
         "symfony/yaml": "v3.1.3",
         "symfony/console": "v3.1.3",
         "container-interop/container-interop": "1.1.0"

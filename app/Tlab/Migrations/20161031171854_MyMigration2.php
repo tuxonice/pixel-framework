@@ -7,9 +7,9 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 
 
-class CreateFlightsTable extends Migration
+class MyMigration2 extends Migration
 {
-    
+
     /**
      * Run the migrations.
      *

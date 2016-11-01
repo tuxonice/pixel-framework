@@ -41,17 +41,4 @@ public function indexAction(Request $request){
 
     }
     
-    
-    public function testAction(Request $request){
-        
-        
-        Capsule::schema()->create('orders', function($table)
-        {
-            $table->increments('id');
-            $table->string('title');
-        });
-        
-        exit;
-    }
-    
 }
