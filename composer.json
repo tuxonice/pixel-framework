@@ -10,7 +10,7 @@
     "require": {
         "php": ">=5.5.0",
         "monolog/monolog": "^1.17",
-		"phpmailer/phpmailer": "v5.2.27",
+		"phpmailer/phpmailer": "v6.1.6",
         "symfony/http-foundation": "v3.4.38",
         "twig/twig": "v1.24.1"
     }
